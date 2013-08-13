@@ -1,8 +1,4 @@
-import rospy
-from visualization_msgs.msg import Marker
-
-
-class ImagePosePair:
+class ImagePosePair(object):
     def __init__(self, image, pose):
         self.img = image.data
         self.pose = pose
@@ -21,24 +17,47 @@ class ImagePosePair:
         pose_file.close()
 
     def add_tag(self, tag):
+        """
+        Tag should be the index of the tag in the (unknown to this class)
+        global list of all tags.
+        """
         self.tags.append(tag)
 
     def add_tags(self, tags):
+        """
+        Tags should be the indices of the tag in the (unknown to this class)
+        global list of all tags.
+        """
         self.tags += tags
 
-    def create_marker(self, num):
-        marker = Marker()
-        marker.header.stamp = rospy.Time.now()
-        marker.header.frame_id = "/map"
-        marker.type = marker.TEXT_VIEW_FACING
-        marker.id = num
-        marker.action = marker.ADD
-        marker.ns = 'tags'
-        #marker.lifetime = 0
-        marker.scale.x = 0.1
-        marker.scale.y = 0.1
-        marker.scale.z = 0.1
-        marker.color.a = 1
-        marker.pose = self.pose
-        marker.text = '\n'.join(self.tags)
-        return marker
+    def pose_to_coord(self):
+        x = self.pose.position.x
+        y = self.pose.position.y
+        t = self.pose.orientation.z
+        return (x, y, t)
+
+    # This methods are needed to use pickle to serialize the ImagePosePair object.
+    # ROS msg break pickle.
+
+    def __getstate__(self):
+        xp = self.pose.position.x
+        yp = self.pose.position.y
+        zp = self.pose.position.z
+
+        xo = self.pose.orientation.x
+        yo = self.pose.orientation.y
+        zo = self.pose.orientation.z
+        wo = self.pose.orientation.y
+
+        pose = {'position': (xp, yp, zp),
+                'orientation': (xo, yo, zo, wo)}
+        info = {'img': self.img, 'pose': pose, 'tags': self.tags}
+        return info
+
+    def __setstate__(self, state):
+        from geometry_msgs.msg import Pose, Point, Quaternion
+        point = Point(*state['pose']['position'])
+        quat = Quaternion(*state['pose']['orientation'])
+        self.pose = Pose(point, quat)
+        self.img = state['img']
+        self.tags = state['tags']

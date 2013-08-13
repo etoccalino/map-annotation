@@ -1,14 +1,22 @@
 import sys
 import rosbag
 import random
+import cPickle as pickle
 
-import ImagePosePair
+from ImagePosePair import ImagePosePair
 
-if len(sys.argv) != 3:
-    print "USAGE: " + sys.argv[0] + " <bagfile> <output dir>"
+try:
+    bag = rosbag.Bag(sys.argv[1])
+    outdir = sys.argv[2] + '/'
+    filename = sys.argv[3]
+except IndexError:
+    print "USAGE: " + sys.argv[0] + " <bagfile> <output dir> <pickled_file> [number_of_poses]"
     sys.exit(1)
 
-bag = rosbag.Bag(sys.argv[1])
+try:
+    num_pose = int(sys.argv[4])
+except IndexError:
+    num_pose = 10
 
 # get first pose:
 for topic, msg, t in bag.read_messages():
@@ -20,15 +28,19 @@ for topic, msg, t in bag.read_messages():
 pairs = []
 for topic, msg, t in bag.read_messages():
     if topic == '/camera/rgb/image_color/compressed':
-        pairs.append(ImagePosePair.ImagePosePair(msg, last_pose))
+        pairs.append(ImagePosePair(msg, last_pose))
 
     if topic == '/robot_pose':
         last_pose = msg
 
+# Save the list to a piclked file.
+dump_file = open(filename, 'wp')
+# Protocol 2 uses the new, more efficient, binary format.
+pickle.dump(pairs, dump_file, 2)
+
 # pick rnd images:
-sampledpairs = random.sample(pairs, 10)
-outdir = sys.argv[2] + '/'
+sampledpairs = random.sample(pairs, num_pose)
 
 for num, pair in enumerate(sampledpairs):
-    name = outdir + str(num)
+    name = outdir + str(num).zfill(3)
     pair.write_files(name)
