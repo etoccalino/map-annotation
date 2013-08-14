@@ -7,11 +7,12 @@ class TaggedMap(DynamicMap):
     def __init__(self, grid_size, all_tags):
         num_tags = len(all_tags)
         # First try with identity matrix as probs.
-        low = 0.05
+        low = 5e-10
         high = 1.0 - (low * num_tags)
         ones = numpy.ones((num_tags, num_tags))
         eye = numpy.eye(num_tags)
-        A = (ones - eye) * low + eye * high
+        #A = (ones - eye) * low + eye * high
+        A = eye
         B = (ones - eye) * low + eye * high
         DynamicMap.__init__(self, grid_size, all_tags, all_tags, A, B)
         # Disable ray tracing.

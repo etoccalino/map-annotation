@@ -39,8 +39,10 @@ dump_file = open(filename, 'wp')
 pickle.dump(pairs, dump_file, 2)
 
 # pick rnd images:
-sampledpairs = random.sample(pairs, num_pose)
+pairs_indices = range(len(pairs))
+sampledpairs = random.sample(pairs_indices, num_pose)
 
-for num, pair in enumerate(sampledpairs):
+for num in sampledpairs:
     name = outdir + str(num).zfill(3)
+    pair = pairs[num]
     pair.write_files(name)
