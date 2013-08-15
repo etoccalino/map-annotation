@@ -1,0 +1,3 @@
+hg+https://tulku@bitbucket.org/tulku/3ddynamicmap
+numpy
+matplotlib
