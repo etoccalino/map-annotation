@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Crowd tagging of maps</title>
+</head>
+
+
+<body>
+<form id="tagChooser">
+  <div align="left" id="tags"><br>
+  <!--To be filled by jquery.-->
+  </div><br>
+<input type="submit" value="Go!" >
+</form>
+
+
+<script src="eventemitter2.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="//cdn.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+
+<script>
+  $(function () {
+    var DATA = {};
+    $.get('tags.json', function(data) {
+      DATA = data;
+      for (tag in data) {
+       $('<input type="radio" name="tags" value=' + tag + '>' + tag + '<br>').appendTo('#tags')
+      }
+    });
+
+    $("#tagChooser").submit(function(eventObject) {
+      eventObject.preventDefault();
+      var tag = $("input[type='radio']:checked").val();
+      console.log(tag);
+      console.log(DATA[tag]);
+    });
+  });
+
+</script>
+
+</body>

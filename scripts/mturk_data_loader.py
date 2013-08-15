@@ -1,6 +1,7 @@
 import sys
 import csv
 import cPickle as pickle
+from map_annotation import TaggedMap
 
 
 def get_result(row):
@@ -17,9 +18,10 @@ def find_ids(tags, all_tags):
 try:
     pairs_file = sys.argv[1]
     csv_file = sys.argv[2]
-    out_file = sys.argv[3]
+    out_dir = sys.argv[3]
 except IndexError:
-    print "USAGE: " + sys.argv[0] + "  <pairs_file> <csv_file> <out_file>"
+    print "USAGE: " + sys.argv[0] + "  <pairs_file> <csv_file> <out_dir>"
+    sys.exit(1)
 
 pairs = pickle.load(open(pairs_file))
 
@@ -46,10 +48,18 @@ for row in results_reader:
     pairs[int(_id)].add_tags(find_ids(tags, all_tags))
     tagged_pairs.append(pairs[int(_id)])
 
-# Save the list to a piclked file.
-dump_file = open(out_file, 'wp')
-# Protocol 2 uses the new, more efficient, binary format.
+# Create tag Map
+tag_map = TaggedMap(0.1, all_tags)
+tag_map.update_tags(pairs)
+
+# Save the list to a pickled file.
+tagged_file = out_dir+'/tagged_pairs.data'
+dump_file = open(tagged_file, 'wp')
 pickle.dump(tagged_pairs, dump_file, 2)
 # Save all_tags to another file
-all_tags_file = open('all_tags.data', 'wp')
-pickle.dump(all_tags, all_tags_file, 2)
+all_tags_file = out_dir+'/all_tags.data'
+dump_file = open(all_tags_file, 'wp')
+pickle.dump(all_tags, dump_file, 2)
+# Save the map.
+map_file = out_dir+'/tagged_map.data'
+tag_map.save_map(tag_map, map_file)

@@ -1,9 +1,7 @@
+import subprocess
 import sys
+import os
 import csv
-
-usefull = [1581, 158, 1645, 191, 254, 2563, 2746, 2774, 2793, 3431, 3645, 3648,
-           3778, 4284, 4289, 4311, 4354, 473, 5049, 5066, 5213, 5306, 5987,
-           6001, 6561, 6599, 6640, 6985, 7057, 728, 759, 8692, 970]
 
 baseurl = "http://201.216.244.17:7000/robot_images/"
 
@@ -11,10 +9,24 @@ baseurl = "http://201.216.244.17:7000/robot_images/"
 def gen_url(_id):
     return baseurl + str(_id) + "_photo.jpg"
 
+
+def gen_useful(photo_dir):
+    files = os.listdir(photo_dir)
+    useful = [int(a.split('_')[0]) for a in files]
+    args = ['scp']
+    args.extend([photo_dir+'/'+a for a in files])
+    args.append('tulku@etoccalino:/var/www/robot_images/')
+    return useful, args
+
 try:
-    out_file = sys.argv[1]
+    photo_dir = sys.argv[1]
+    out_file = sys.argv[2]
 except IndexError:
-    print "USAGE: " + sys.argv[0] + "  <outfile>"
+    print "USAGE: " + sys.argv[0] + " <photo dir> <out file>"
+    sys.exit(1)
+
+# Get useful ids.
+useful, args = gen_useful(photo_dir)
 
 # Prepare output
 csvfile = open(out_file, 'wb')
@@ -24,5 +36,8 @@ datawriter = csv.writer(csvfile, delimiter=',', quotechar='"',
 # Write the header
 datawriter.writerow(['image_url', 'pair_id'])
 
-for num, _id in enumerate(usefull):
+for num, _id in enumerate(useful):
     datawriter.writerow([gen_url(_id), str(_id)])
+
+# SCP files to the web server
+subprocess.call(args)

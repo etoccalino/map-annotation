@@ -4,17 +4,17 @@ class ImagePosePair(object):
         self.pose = pose
         self.tags = []
 
-    def write_files(self, name_base):
+    def write_files(self, name_base, write_pose=False):
         photo_name = name_base+'_photo.jpg'
-        pose_name = name_base+'_pose.txt'
-
         photo_file = open(photo_name, "wb")
         photo_file.write(self.img)
         photo_file.close()
 
-        pose_file = open(pose_name, "w")
-        pose_file.write(str(self.pose)+'\n')
-        pose_file.close()
+        if write_pose:
+            pose_name = name_base+'_pose.txt'
+            pose_file = open(pose_name, "w")
+            pose_file.write(str(self.pose)+'\n')
+            pose_file.close()
 
     def add_tag(self, tag):
         """
@@ -36,8 +36,8 @@ class ImagePosePair(object):
         t = self.pose.orientation.z
         return (x, y, t)
 
-    # This methods are needed to use pickle to serialize the ImagePosePair object.
-    # ROS msg break pickle.
+    # This methods are needed to use pickle to serialize the
+    # ImagePosePair object. ROS msg break pickle.
 
     def __getstate__(self):
         xp = self.pose.position.x

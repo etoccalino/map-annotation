@@ -9,8 +9,10 @@ import numpy
 
 
 def generate_color(num_colors):
-    # No llego hasta el final de la escala porque el ultimo color es como el
-    # primero.
+    """
+    Automatically generate a list of colors, trying to make them as
+    different as possible from each other.
+    """
     colors = []
     for hue in numpy.linspace(0, 280, num_colors):
         hue = hue / 360
@@ -117,4 +119,3 @@ class TagViz(object):
         marker.pose.orientation.w = 1.0
         marker.ns = ns
         return marker
-
