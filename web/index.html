@@ -2,6 +2,15 @@
 <html>
 <head>
 <title>Crowd tagging of maps</title>
+
+<style>
+  .spinner {
+      display: none;
+  }
+  .spinner.active {
+      display: block;
+  }
+</style>
 </head>
 
 
@@ -12,7 +21,8 @@
   </div><br>
 <input type="submit" value="Go!" >
 </form>
-
+<br />
+<img class="spinner" src="http://za.bsmarter.mobi/images/spinner.gif" />
 
 <script src="eventemitter2.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
@@ -39,8 +49,18 @@
 
       // Sending pose to robot.
       var pose = DATA[tag];
-      var goal = ROBOT.createGoal(pose[0], pose[1], pose[2]);
-      ROBOT.sendGoal(goal);
+      var goal = ROBOT.createGoal(pose[0], pose[1], pose[2], pose[3]);
+      $('.spinner').addClass('active');
+      ROBOT.sendGoal(goal, function (error) {
+        if (error) {
+          console.log('THERE WAS AN ERROR!');
+          console.dir(error);
+        }
+        else {
+          console.log("SUCCESS!");
+        }
+        $('.spinner').removeClass('active');
+      });
     });
   });
 </script>

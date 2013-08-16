@@ -33,7 +33,9 @@ ROBOT.init = function (params) {
 }
 
 
-ROBOT.createGoal = function (x, y, w) {
+ROBOT.createGoal = function (x, y, z, w) {
+  // position: x, y, 0
+  // orientation: 0, 0, z, w
 
   var moveBaseGoal = new ROSLIB.Goal({
     actionClient : ROBOT.moveBaseActionClient,
@@ -49,7 +51,7 @@ ROBOT.createGoal = function (x, y, w) {
         },
         pose: {
           position: { x: x, y: y, z: 0 },
-          orientation: { x: 0, y: 0, z: 0, w: w }
+          orientation: { x: 0, y: 0, z: z, w: w }
         }
       }
     }
@@ -65,7 +67,17 @@ ROBOT.createGoal = function (x, y, w) {
   return moveBaseGoal;
 }
 
-ROBOT.sendGoal = function (goal) {
+ROBOT.sendGoal = function (goal, callback) {
+  // The callback should expect an error object (which will by null if no error ocurred)
+  // and a result object (which will be null if an error ocurred).
+
+  if (callback) {
+    goal.on('result', callback);
+    goal.on('timeout', function () {
+      callback({error: 'timeout'});
+    });
+  }
+
   ROBOT._debug_log_msg('Sending goal to robot...');
   goal.send();
   ROBOT._latestGoal = goal;
@@ -73,9 +85,9 @@ ROBOT.sendGoal = function (goal) {
 }
 
 ROBOT.cancelGoal = function (goal) {
-  var goal = goal || ROBOT._latestGoal;
+  var g = goal || ROBOT._latestGoal;
   ROBOT._debug_log_msg('Cancelling goal...');
-  goal.cancel();
+  g.cancel();
   ROBOT._debug_log_msg('...goal canceled.')
 }
 
