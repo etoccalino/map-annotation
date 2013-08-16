@@ -1,30 +1,37 @@
 var ROBOT = {
   ip: '10.1.0.21',
+  debug: true
 }
 
-// ROS CONNECTION
+ROBOT.init = function (params) {
+  params = params || {};
+  ROBOT.debug = (params.debug !== undefined) ? params.debug : ROBOT.debug;
+  ROBOT.ip = params.ip || ROBOT.ip;
+  if (! ROBOT.ip) {
+    throw Error('Must provide a robot IP address.');
+  }
 
-ROBOT.ros = new ROSLIB.Ros({
-  url : 'ws://' + ROBOT.ip + ':9090'
-});
-ROBOT.ros.on('error', function(error) {
-  console.log(error);
-});
-ROBOT.ros.on('connection', function () {
-  console.log('ROS connection successfull.');
-});
+  // ROS CONNECTION
+  ROBOT.ros = new ROSLIB.Ros({
+    url : 'ws://' + ROBOT.ip + ':9090'
+  });
+  if (ROBOT.debug) {
+    ROBOT.ros.on('error', function(error) {
+      ROBOT._debug_log_object(error);
+    });
+    ROBOT.ros.on('connection', function () {
+      ROBOT._debug_log_msg('ROS connection successfull.');
+    });
+  }
 
+  // ACTION CLIENT CONNECTION
+  ROBOT.moveBaseActionClient = new ROSLIB.ActionClient({
+    ros : ROBOT.ros,
+    serverName : '/move_base',
+    actionName : 'move_base_msgs/MoveBaseAction'
+  });
+}
 
-// ACTION CLIENT CONNECTION
-
-ROBOT.moveBaseActionClient = new ROSLIB.ActionClient({
-  ros : ROBOT.ros,
-  serverName : '/move_base',
-  actionName : 'move_base_msgs/MoveBaseAction'
-});
-
-
-// Create a goal.
 
 ROBOT.createGoal = function (x, y, w) {
 
@@ -48,24 +55,37 @@ ROBOT.createGoal = function (x, y, w) {
     }
   });
 
-  moveBaseGoal.on('result', function(result) {
-    console.log('Final result from robot:');
-    console.dir(result);
-  });
+  if (ROBOT.debug) {
+    moveBaseGoal.on('result', function(result) {
+      ROBOT._debug_log_msg('Final result from robot:');
+      ROBOT._debug_log_object(result);
+    });
+  }
 
   return moveBaseGoal;
 }
 
 ROBOT.sendGoal = function (goal) {
-  console.log('Sending goal to robot...');
+  ROBOT._debug_log_msg('Sending goal to robot...');
   goal.send();
   ROBOT._latestGoal = goal;
-  console.log('...goal sent to robot.');
+  ROBOT._debug_log_msg('...goal sent to robot.');
 }
 
 ROBOT.cancelGoal = function (goal) {
   var goal = goal || ROBOT._latestGoal;
-  console.log('Cancelling goal...');
+  ROBOT._debug_log_msg('Cancelling goal...');
   goal.cancel();
-  console.log('...goal canceled.')
+  ROBOT._debug_log_msg('...goal canceled.')
+}
+
+ROBOT._debug_log_msg = function (msg) {
+  if (ROBOT.debug) {
+    console.log(msg);
+  }
+}
+ROBOT._debug_log_object = function (obj) {
+  if (ROBOT.debug) {
+    console.dir(obj);
+  }
 }
