@@ -4,15 +4,19 @@
 <title>Crowd tagging of maps</title>
 
 <style>
-  .spinner {
+  #feedback {
+      position: fixed;
+      top: 1em;
+      right: 1em;
+  }
+  #spinner, #error {
       display: none;
   }
-  .spinner.active {
+  #spinner.active, #error.active {
       display: block;
   }
 </style>
 </head>
-
 
 <body>
 <form id="tagChooser">
@@ -22,13 +26,16 @@
 <input type="submit" value="Go!" >
 </form>
 <br />
-<img class="spinner" src="http://za.bsmarter.mobi/images/spinner.gif" />
+
+<div id="feedback">
+  <img id="spinner" src="http://za.bsmarter.mobi/images/spinner.gif" />
+  <img id="error" src="http://2.bp.blogspot.com/_4SL6YMADEh0/S_V72ePhTJI/AAAAAAAAABQ/tCcD4yVRuz4/s200/sad-face.jpg" />
+</div>
 
 <script src="eventemitter2.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script src="//cdn.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
 <script src="robot.js"></script>
-
 <script>
   ROBOT.init();
 
@@ -50,16 +57,19 @@
       // Sending pose to robot.
       var pose = DATA[tag];
       var goal = ROBOT.createGoal(pose[0], pose[1], pose[2], pose[3]);
-      $('.spinner').addClass('active');
+
+      $('#spinner').addClass('active');
       ROBOT.sendGoal(goal, function (error) {
         if (error) {
           console.log('THERE WAS AN ERROR!');
           console.dir(error);
+          $('#error').addClass('active');
+          setTimeout(function () { $('#error').removeClass('active') }, 3000);
         }
         else {
           console.log("SUCCESS!");
         }
-        $('.spinner').removeClass('active');
+        $('#spinner').removeClass('active');
       });
     });
   });
