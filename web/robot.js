@@ -72,9 +72,11 @@ ROBOT.sendGoal = function (goal, callback) {
   // and a result object (which will be null if an error ocurred).
 
   if (callback) {
-    goal.on('result', callback);
+    goal.on('result', function () {
+      callback(null, result);
+    });
     goal.on('timeout', function () {
-      callback({error: 'timeout'});
+      callback({error: 'timeout'}, null);
     });
   }
 
