@@ -1,8 +1,25 @@
+/**
+ * HANDLE CONNECTION TO THE ROBOT.
+ *
+ * The module exposes a singleton object 'ROBOT'.
+ *
+ * Call ROBOT.init() before calling any other method. After that, you may
+ * ROBOT.createGoal() and use the retuned value to ROBOT.sendGoal() and
+ * ROBOT.cancelGoal().
+ */
+
 var ROBOT = {
   ip: '10.1.0.21',
   debug: true
 }
 
+/**
+ * Initialize the ROBOT object and connect to the robot.
+ *
+ * @params an object with keys:
+ *  * ip    : the IP address of the robot, as a string
+ *  * debug : a boolean to signal debugging output.
+ */
 ROBOT.init = function (params) {
   params = params || {};
   ROBOT.debug = (params.debug !== undefined) ? params.debug : ROBOT.debug;
@@ -33,9 +50,21 @@ ROBOT.init = function (params) {
 }
 
 
+/**
+ * Create a Goal object, suitable to pass to sendGoal() and cancelGoal(). Read
+ * the params carefully, they're confusing.
+ *
+ * @params an object with keys:
+ *  * x : x coordinate of the position
+ *  * y : y coordinate of the position
+ *  * z : z coordinate of the orientation
+ *  * w : w coordinate of the orientation
+ *
+ * Sending the returned goal will send the robot to:
+ *  position: x, y, 0
+ *  orientation: 0, 0, z, w
+ */
 ROBOT.createGoal = function (x, y, z, w) {
-  // position: x, y, 0
-  // orientation: 0, 0, z, w
 
   var moveBaseGoal = new ROSLIB.Goal({
     actionClient : ROBOT.moveBaseActionClient,
@@ -67,10 +96,18 @@ ROBOT.createGoal = function (x, y, z, w) {
   return moveBaseGoal;
 }
 
+/**
+ * Send a goal to the robot.
+ *
+ * @params an object with keys:
+ *  * goal : a goal object, as returned by createGoal()
+ *  * callback : callback function to call on success and error condition
+ *
+ * The goal should be constructed with createGoal(). The callback parameter
+ * should expect an error object (which will by null if no error ocurred) and a
+ * result object (which will be null if an error ocurred).
+ */
 ROBOT.sendGoal = function (goal, callback) {
-  // The callback should expect an error object (which will by null if no error ocurred)
-  // and a result object (which will be null if an error ocurred).
-
   if (callback) {
     goal.on('result', function () {
       callback(null, result);
@@ -86,6 +123,15 @@ ROBOT.sendGoal = function (goal, callback) {
   ROBOT._debug_log_msg('...goal sent to robot.');
 }
 
+/**
+ * Cancel a goal sent to the robot.
+ *
+ * @params an object with keys:
+ *  * goal : a goal object, as returned by createGoal() (optional)
+ *
+ * The goal should be constructed with createGoal(). If not provided, the last
+ * goal passed to sendGoal() is cancelled (if any).
+ */
 ROBOT.cancelGoal = function (goal) {
   var g = goal || ROBOT._latestGoal;
   ROBOT._debug_log_msg('Cancelling goal...');
@@ -93,11 +139,13 @@ ROBOT.cancelGoal = function (goal) {
   ROBOT._debug_log_msg('...goal canceled.')
 }
 
+// Conditionally log a string to the console.
 ROBOT._debug_log_msg = function (msg) {
   if (ROBOT.debug) {
     console.log(msg);
   }
 }
+// Conditionally show an object in the console.
 ROBOT._debug_log_object = function (obj) {
   if (ROBOT.debug) {
     console.dir(obj);
