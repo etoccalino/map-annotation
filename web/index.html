@@ -39,7 +39,7 @@
 
       // Sending pose to robot.
       var pose = DATA[tag];
-      var goal = ROBOT.createGoal(pose[0], pose[2], pose[1]);
+      var goal = ROBOT.createGoal(pose[0], pose[1], pose[2]);
       ROBOT.sendGoal(goal);
     });
   });
