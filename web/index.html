@@ -17,6 +17,7 @@
 <script src="eventemitter2.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script src="//cdn.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+<script src="robot.js"></script>
 
 <script>
   $(function () {
@@ -33,9 +34,13 @@
       var tag = $("input[type='radio']:checked").val();
       console.log(tag);
       console.log(DATA[tag]);
+
+      // Sending pose to robot.
+      var pose = DATA[tag];
+      var goal = ROBOT.createGoal(pose[0], pose[2], pose[1]);
+      ROBOT.sendGoal(goal);
     });
   });
-
 </script>
 
 </body>
