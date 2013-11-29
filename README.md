@@ -51,3 +51,7 @@ Visualization scripts:
   tag has its own namespace, showing a CubeList per pose. Each pose has
   a different alpha value, indicating the probability of finding the tag
   in that pose.
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/etoccalino/map-annotation/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
